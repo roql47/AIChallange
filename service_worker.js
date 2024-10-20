@@ -1,24 +1,31 @@
-const CACHE_NAME = 'v1';  // 캐시 이름
+const CACHE_NAME = 'v2';  // 캐시 이름을 새로운 버전으로 변경
 const CACHE_ASSETS = [
   '/assets/assets/images/class/a_pacemaker_rhythm.png',
   '/assets/assets/images/class/accelerated_idioventricular_rhythm.png',
-  // 다른 파일 경로들도 여기에 추가하세요.
+  // 다른 파일 경로들 추가...
 ];
 
-// 설치 이벤트: 캐시할 파일들을 저장
 self.addEventListener('install', (event) => {
-  self.skipWaiting();  // 새로운 Service Worker를 바로 활성화
+  self.skipWaiting();  // Service Worker를 즉시 활성화
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('Opened cache');
-      return cache.addAll(CACHE_ASSETS)
-        .then(() => console.log('All files cached successfully'))
-        .catch((error) => console.error('Failed to cache some files:', error));
+      return Promise.all(
+        CACHE_ASSETS.map((url) => {
+          return fetch(url).then((response) => {
+            if (!response.ok) {
+              throw new Error('Failed to fetch ' + url + ': ' + response.status);
+            }
+            return cache.put(url, response);
+          }).catch((error) => {
+            console.error('Failed to cache file:', url, error);
+          });
+        })
+      );
     })
   );
 });
 
-// 활성화 이벤트: 이전 캐시를 삭제하고 새로운 캐시를 사용
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -32,9 +39,9 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  return self.clients.claim();  // 활성화 후 즉시 컨트롤
 });
 
-// fetch 이벤트: 캐시된 파일이 있으면 제공하고, 없으면 네트워크에서 가져옴
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
