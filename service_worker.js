@@ -36,6 +36,7 @@ const CACHE_ASSETS = [
   'https://raw.githubusercontent.com/roql47/AIChallange/master/assets/assets/images/class/ventricular_premature_contraction.png',
   'https://raw.githubusercontent.com/roql47/AIChallange/master/assets/assets/images/class/ventricular_tachycardia.png',
   'https://raw.githubusercontent.com/roql47/AIChallange/master/assets/assets/images/class/wellens_syndrome.png'
+  // 여기에 다른 URL들도 추가...
 ];
 
 // 설치 이벤트: 캐시할 파일들을 저장
@@ -44,12 +45,8 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME).then((cache) => {
       console.log('Opened cache');
       return cache.addAll(CACHE_ASSETS)
-        .then(() => {
-          console.log('All files cached successfully');
-        })
-        .catch((error) => {
-          console.error('Failed to cache some files:', error);
-        });
+        .then(() => console.log('All files cached successfully'))
+        .catch((error) => console.error('Failed to cache some files:', error));
     })
   );
 });
@@ -58,13 +55,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request)
-        .then((fetchResponse) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, fetchResponse.clone());
-            return fetchResponse;
-          });
-        });
+      return response || fetch(event.request);
     })
   );
 });
