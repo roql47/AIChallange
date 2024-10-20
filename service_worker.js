@@ -2,19 +2,7 @@ const CACHE_NAME = 'v1';
 const CACHE_ASSETS = [
   '/assets/assets/images/class/a_pacemaker_rhythm.png',
   '/assets/assets/images/class/accelerated_idioventricular_rhythm.png',
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(CACHE_ASSETS)
-        .then(() => console.log('Files cached successfully'))
-        .catch((error) => console.error('Failed to cache some files:', error));
-    })
-  );
-});
-
-  // 여기에 다른 URL들도 추가...
+  // 여기에 다른 파일 경로도 추가할 수 있습니다
 ];
 
 // 설치 이벤트: 캐시할 파일들을 저장
