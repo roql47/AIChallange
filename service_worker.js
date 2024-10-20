@@ -43,7 +43,13 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('Opened cache');
-      return cache.addAll(CACHE_ASSETS);  // 캐시할 파일 추가
+      return cache.addAll(CACHE_ASSETS)
+        .then(() => {
+          console.log('All files cached successfully');
+        })
+        .catch((error) => {
+          console.error('Failed to cache some files:', error);
+        });
     })
   );
 });
@@ -52,7 +58,13 @@ self.addEventListener('install', (event) => {
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+      return response || fetch(event.request)
+        .then((fetchResponse) => {
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, fetchResponse.clone());
+            return fetchResponse;
+          });
+        });
     })
   );
 });
